@@ -4,6 +4,8 @@
 #include <math.h>
 #include <iostream>
 
+using namespace std;
+
 #define PI			3.1415926
 #define DTR			0.0174533
 #define	COLORNUM		14
@@ -83,7 +85,7 @@ public:
             glEnd();
         }
     }
-	void DrawColor() {
+	void DrawColor(int colorNumIndex) {
         glPolygonMode(GL_FRONT, GL_FILL);
         for (int f = 0; f < numFaces; f++)
         {
@@ -94,6 +96,7 @@ public:
                 int		ic = face[f].vert[v].colorIndex;
                 
                 ic = f % COLORNUM;
+                // ic = colorNumIndex;
 
                 glColor3f(ColorArr[ic][0], ColorArr[ic][1], ColorArr[ic][2]); 
                 glVertex3f(pt[iv].x, pt[iv].y, pt[iv].z);
@@ -236,148 +239,281 @@ public:
 		face[5].vert[i].colorIndex = 5;
 
 }
-
-    void CreateShape1(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase) {
-        numVerts = (4 + nSegment) * 2;
-        numFaces = (1 + nSegment) * 2 + 4 + nSegment;
-
-        pt = new Point3[numVerts];
-        face = new Face[numFaces];
-        float positiveDepth = fDepth / 2;
-        float positiveBoundY = largeBase / 2;
-        float positiveBoundX = (fHeight + smallBase) / 2;
-
-        float centricCircleX = -((fHeight + smallBase) / 2 - smallBase);
-        float centricCircleY = - positiveBoundY;
-        pt[0].set(centricCircleX, centricCircleY, positiveDepth);
-        pt[3].set(centricCircleX, centricCircleY, - positiveDepth);
-
-        pt[1].set(positiveBoundX, - positiveBoundY, positiveDepth);
-        pt[2].set(positiveBoundX, positiveBoundY, positiveDepth);
-        pt[4].set(positiveBoundX, - positiveBoundY, - positiveDepth);
-        pt[5].set(positiveBoundX, positiveBoundY, - positiveDepth);
-
-        int circleStartPoint = 6;
-        pt[circleStartPoint].set(centricCircleX, largeBase / 2 - largeBase + smallBase, positiveDepth);
-        pt[circleStartPoint + nSegment + 1].set(centricCircleX, largeBase / 2 - largeBase + smallBase, - positiveDepth);
-        std::cout << pt[10].x << " " << pt[10].y << " " << pt[10].z << std::endl;
-        pt[circleStartPoint + nSegment].set(- positiveBoundX, - positiveBoundY, positiveDepth);
-        pt[circleStartPoint + nSegment + 1 + nSegment].set(- positiveBoundX, - positiveBoundY, - positiveDepth);
-
-        face[0].nVerts = 4;
-        face[0].vert = new VertexID[face[0].nVerts];
-        face[0].vert[0].vertIndex = 1;
-        face[0].vert[1].vertIndex = 4;
-        face[0].vert[2].vertIndex = 5;
-        face[0].vert[3].vertIndex = 2;
-
-        face[1].nVerts = 4;
-        face[1].vert = new VertexID[face[1].nVerts];
-        face[1].vert[0].vertIndex = 1;
-        face[1].vert[1].vertIndex = 2;
-        face[1].vert[2].vertIndex = 6;
-        face[1].vert[3].vertIndex = 0;
-
-        face[2].nVerts = 4;
-        face[2].vert = new VertexID[face[2].nVerts];
-        face[2].vert[0].vertIndex = 2;
-        face[2].vert[1].vertIndex = 5;
-        face[2].vert[2].vertIndex = circleStartPoint + nSegment + 1;
-        face[2].vert[3].vertIndex = 6;
-
-        face[3].nVerts = 4;
-        face[3].vert = new VertexID[face[3].nVerts];
-        face[3].vert[0].vertIndex = 5;
-        face[3].vert[1].vertIndex = 4;
-        face[3].vert[2].vertIndex = 3;
-        face[3].vert[3].vertIndex = circleStartPoint + nSegment + 1;
-
-        face[4].nVerts = 4;
-        face[4].vert = new VertexID[face[4].nVerts];
-        face[4].vert[0].vertIndex = 1;
-        face[4].vert[1].vertIndex = 4;
-        face[4].vert[2].vertIndex = 3;
-        face[4].vert[3].vertIndex = 0;
-
-        float alpha = 0;
-        for (int i = 0; i < nSegment; i++)
-        {
-            if (i < nSegment - 1) {
-                alpha += ((float)90 / nSegment) * DTR;
-                float circleX = - smallBase * sin(alpha) + centricCircleX;
-                float circleY = smallBase * cos(alpha) - largeBase / 2;
-                pt[i + circleStartPoint + 1].set(circleX, circleY, positiveDepth);
-                pt[i + circleStartPoint + 1 + nSegment + 1].set(circleX, circleY, - positiveDepth);
-            }
-            face[i + 5].nVerts = 4;
-            face[i + 5].vert = new VertexID[face[i + 5].nVerts];
-            face[i + 5].vert[0].vertIndex = i + 6;
-            face[i + 5].vert[1].vertIndex = i + 6 + nSegment + 1;
-            face[i + 5].vert[2].vertIndex = i + 6 + nSegment + 2;
-            face[i + 5].vert[3].vertIndex = i + 6 + 1;
-
-            face[i + 5 + nSegment].nVerts = 3;
-            face[i + 5 + nSegment].vert = new VertexID[face[i + 5 + nSegment].nVerts];
-            face[i + 5 + nSegment].vert[0].vertIndex = 0;
-            face[i + 5 + nSegment].vert[1].vertIndex = i + 6;
-            face[i + 5 + nSegment].vert[2].vertIndex = i + 7;
-
-            face[i + 5 + nSegment * 2].nVerts = 3;
-            face[i + 5 + nSegment * 2].vert = new VertexID[face[i + 5 + nSegment * 2].nVerts];
-            face[i + 5 + nSegment * 2].vert[0].vertIndex = 3;
-            face[i + 5 + nSegment * 2].vert[1].vertIndex = i + 6 + nSegment + 2;
-            face[i + 5 + nSegment * 2].vert[2].vertIndex = i + 6 + nSegment + 1;
-        }
-        std::cout << pt[10].x << " " << pt[10].y << " " << pt[10].z << std::endl;
-    }
+    void CreateShape1(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase);
 };
 
-using namespace std;
+void Mesh::CreateShape1(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase) {
+    numVerts = (4 + nSegment) * 2;
+    numFaces = (1 + nSegment) * 2 + 5 + nSegment;
 
-int		screenWidth = 600;
-int		screenHeight= 300;
+    pt = new Point3[numVerts];
+    face = new Face[numFaces];
+    float positiveDepth = fDepth / 2;
+    float positiveBoundY = largeBase / 2;
+    float positiveBoundX = (fHeight + smallBase) / 2;
 
-Mesh	tetrahedron;
-Mesh	cube;
-Mesh	cylinder;
-int		nChoice = 1;
+    float centricCircleX = -((fHeight + smallBase) / 2 - smallBase);
+    float centricCircleY = - positiveBoundY;
+    pt[0].set(centricCircleX, centricCircleY, positiveDepth);
+    pt[3].set(centricCircleX, centricCircleY, - positiveDepth);
+
+    pt[1].set(positiveBoundX, - positiveBoundY, positiveDepth);
+    pt[2].set(positiveBoundX, positiveBoundY, positiveDepth);
+    pt[4].set(positiveBoundX, - positiveBoundY, - positiveDepth);
+    pt[5].set(positiveBoundX, positiveBoundY, - positiveDepth);
+
+    int circleStartPoint = 6;
+    pt[circleStartPoint].set(centricCircleX, largeBase / 2 - largeBase + smallBase, positiveDepth);
+    pt[circleStartPoint + nSegment + 1].set(centricCircleX, largeBase / 2 - largeBase + smallBase, - positiveDepth);
+    pt[circleStartPoint + nSegment].set(- positiveBoundX, - positiveBoundY, positiveDepth);
+    pt[circleStartPoint + nSegment + 1 + nSegment].set(- positiveBoundX, - positiveBoundY, - positiveDepth);
+
+    face[0].nVerts = 4;
+    face[0].vert = new VertexID[face[0].nVerts];
+    face[0].vert[0].vertIndex = 1;
+    face[0].vert[1].vertIndex = 4;
+    face[0].vert[2].vertIndex = 5;
+    face[0].vert[3].vertIndex = 2;
+
+    face[1].nVerts = 4;
+    face[1].vert = new VertexID[face[1].nVerts];
+    face[1].vert[0].vertIndex = 1;
+    face[1].vert[1].vertIndex = 2;
+    face[1].vert[2].vertIndex = 6;
+    face[1].vert[3].vertIndex = 0;
+
+    face[2].nVerts = 4;
+    face[2].vert = new VertexID[face[2].nVerts];
+    face[2].vert[0].vertIndex = 2;
+    face[2].vert[1].vertIndex = 5;
+    face[2].vert[2].vertIndex = circleStartPoint + nSegment + 1;
+    face[2].vert[3].vertIndex = 6;
+
+    face[3].nVerts = 4;
+    face[3].vert = new VertexID[face[3].nVerts];
+    face[3].vert[0].vertIndex = 5;
+    face[3].vert[1].vertIndex = 4;
+    face[3].vert[2].vertIndex = 3;
+    face[3].vert[3].vertIndex = circleStartPoint + nSegment + 1;
+
+    face[4].nVerts = 4;
+    face[4].vert = new VertexID[face[4].nVerts];
+    face[4].vert[0].vertIndex = 1;
+    face[4].vert[1].vertIndex = 4;
+    face[4].vert[2].vertIndex = 3;
+    face[4].vert[3].vertIndex = 0;
+
+    face[numFaces - 1].nVerts = 4;
+    face[numFaces - 1].vert = new VertexID[face[numFaces - 1].nVerts];
+    face[numFaces - 1].vert[0].vertIndex = 0;
+    face[numFaces - 1].vert[1].vertIndex = 3;
+    face[numFaces - 1].vert[2].vertIndex = numVerts - 1;
+    face[numFaces - 1].vert[3].vertIndex = numVerts - nSegment - 2;
+
+    float alpha = 0;
+    for (int i = 0; i < nSegment; i++)
+    {
+        if (i < nSegment - 1) {
+            alpha += ((float)90 / nSegment) * DTR;
+            float circleX = - smallBase * sin(alpha) + centricCircleX;
+            float circleY = smallBase * cos(alpha) - largeBase / 2;
+            pt[i + circleStartPoint + 1].set(circleX, circleY, positiveDepth);
+            pt[i + circleStartPoint + 1 + nSegment + 1].set(circleX, circleY, - positiveDepth);
+        }
+        face[i + 5].nVerts = 4;
+        face[i + 5].vert = new VertexID[face[i + 5].nVerts];
+        face[i + 5].vert[0].vertIndex = i + 6;
+        face[i + 5].vert[1].vertIndex = i + 6 + nSegment + 1;
+        face[i + 5].vert[2].vertIndex = i + 6 + nSegment + 2;
+        face[i + 5].vert[3].vertIndex = i + 6 + 1;
+
+        face[i + 5 + nSegment].nVerts = 3;
+        face[i + 5 + nSegment].vert = new VertexID[face[i + 5 + nSegment].nVerts];
+        face[i + 5 + nSegment].vert[0].vertIndex = 0;
+        face[i + 5 + nSegment].vert[1].vertIndex = i + 6;
+        face[i + 5 + nSegment].vert[2].vertIndex = i + 7;
+
+        face[i + 5 + nSegment * 2].nVerts = 3;
+        face[i + 5 + nSegment * 2].vert = new VertexID[face[i + 5 + nSegment * 2].nVerts];
+        face[i + 5 + nSegment * 2].vert[0].vertIndex = 3;
+        face[i + 5 + nSegment * 2].vert[1].vertIndex = i + 6 + nSegment + 2;
+        face[i + 5 + nSegment * 2].vert[2].vertIndex = i + 6 + nSegment + 1;
+    }
+}
+
+
+int		screenWidth = 1200;
+int		screenHeight = 600;
+
+Mesh shape1;
+
+float camPosX = 1;
+float camPosY = 3;
+float camPosZ = 7;
+
+bool isWireframeMode = false;
+bool isOrtho = false;
+
+void reshape(GLsizei width, GLsizei height) {
+    screenWidth = width;
+    screenHeight = height;
+    float aspect = (float)width / height;
+    glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+    glLoadIdentity();
+    gluPerspective(60, aspect, 0.001, 300);
+    // glutPostRedisplay();
+}
 
 void drawAxis()
 {
 	glColor3f(0, 0, 1);
 	glBegin(GL_LINES);
+        glColor3f(1,0,0);
 		glVertex3f(0, 0, 0);
 		glVertex3f(4, 0, 0);
 
+        glColor3f(0,1,0);
 		glVertex3f(0, 0, 0);
 		glVertex3f(0, 4, 0);
 
+        glColor3f(0,0,1);
 		glVertex3f(0, 0, 0);
 		glVertex3f(0, 0, 4);
 	glEnd();
 }
-void myDisplay()
-{
-    cout << "Helo i am under tha watar pls halp me" << endl;
+
+void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(3, 2, 2, 0, 0, 0, 0, 1, 0);
+    if (!isOrtho) {
+	    gluLookAt(camPosX, camPosY, camPosZ, 0, 0, 0, 0, 1, 0);
+    }
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-	glViewport(0, 0, screenWidth/2, screenHeight);
+	// glViewport(0, 0, screenWidth/2, screenHeight);
 	
-	drawAxis();
+	// drawAxis();
 
-	glColor3f(0, 0, 0);
-	cylinder.DrawWireframe();
+	// glColor3f(0, 0, 0);
+	// cylinder.DrawWireframe();
 
-	glViewport(screenWidth/2, 0, screenWidth/2, screenHeight);
+	glViewport(0, 0, screenWidth, screenHeight);
 
-	drawAxis();
-	cylinder.DrawColor();
+	
+    if (!isWireframeMode) {
+        shape1.DrawColor(1);
+    }
+    else {
+        drawAxis();
+        shape1.DrawWireframe();
+    }
 
 	glFlush();
     glutSwapBuffers();
+}
+
+void moveCamera(int direction) {
+    //-1: left, 1: right, -2: down, 2: up...
+    if (isOrtho) return;
+    if (direction == 1 || direction == -1) {
+        float moveAngle = - 10 * DTR;
+        if (direction == 1) moveAngle = - moveAngle;
+
+        float camRadius = sqrt(camPosX * camPosX + camPosZ * camPosZ);
+        float camPosXid = camPosX / camRadius;
+        float camPosZid = camPosZ / camRadius;
+
+        float camAngle = acos(camPosXid);
+        if (camPosZid < 0) {
+            camAngle += 2 * (PI - camAngle);
+        }
+        float newCamAngle = fmod(camAngle + moveAngle, 2 * PI);
+
+        camPosX = camRadius * cos(newCamAngle);
+        camPosZ = camRadius * sin(newCamAngle);
+    }
+    else if (direction == 2 || direction == -2) {
+        float moveVertical = 0.1;
+        if (direction == 2) {
+            camPosY += moveVertical;
+        }
+        else camPosY -= moveVertical;
+    }
+    else {
+        float moveDistance = 0.1;
+        if (direction == 3) moveDistance = - moveDistance;
+        float dirAngle = atan(camPosZ/camPosX);
+        camPosX += moveDistance * cos(dirAngle);
+        camPosZ += moveDistance * sin(dirAngle);
+    }
+
+    // gluLookAt(camPosX, camPosY, camPosZ, 0, 0, 0, 0, 1, 0);
+    glutPostRedisplay();
+}
+
+void specialKeys(int key, int x, int y) {
+    switch (key) {
+        case GLUT_KEY_LEFT:
+            moveCamera(-1);
+            break;
+        case GLUT_KEY_RIGHT:
+            moveCamera(1);
+            break;
+        case GLUT_KEY_UP:
+            moveCamera(2);
+            break;
+        case GLUT_KEY_DOWN:
+            moveCamera(-2);
+            break;    
+   }
+}
+
+void toggleWireframe() {
+    isWireframeMode = !isWireframeMode;
+    glutPostRedisplay();
+}
+
+void toggleOrtho() {
+    glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+    if (!isOrtho) {
+        float aRatio = (float)screenWidth/screenHeight;
+        glOrtho(- aRatio * 4, aRatio * 4, -4, 4, -300, 300);
+        glMatrixMode(GL_MODELVIEW);
+	    glLoadIdentity();
+        gluLookAt(0, 0, 3, 0, 0, 0, 0, 1, 0);
+    }
+    else {
+        gluPerspective(60, (float)screenWidth/screenHeight, 0.001, 300);
+        glMatrixMode(GL_MODELVIEW);
+	    glLoadIdentity();
+        gluLookAt(camPosX, camPosY, camPosZ, 0, 0, 0, 0, 1, 0);
+    }
+    isOrtho = !isOrtho;
+    glutPostRedisplay();
+}
+
+void keyInput(unsigned char key, int x, int y) {
+    switch (key) {
+        case '+':
+            moveCamera(3);
+            break;
+        case '-':
+            moveCamera(-3);
+            break;   
+        case 'w':
+            toggleWireframe();
+            break;
+        case 'W':
+            toggleWireframe();
+            break;
+        case 'v':
+            toggleOrtho();
+            break;
+        case 'V':
+            toggleOrtho();
+            break;
+   }
 }
 
 void myInit()
@@ -391,24 +527,24 @@ void myInit()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-fHalfSize, fHalfSize, -fHalfSize, fHalfSize, -1000, 1000);
+	// glOrtho(-fHalfSize, fHalfSize, -fHalfSize, fHalfSize, -1000, 1000);
+    gluPerspective(60, (float)screenWidth/screenHeight, 0.001, 300);
 }
 
 int main(int argc, char* argv[])
 {
-	//cout << "1. Tetrahedron" << endl;
-	//cout << "2. Cube" << endl;
-	//cout << "Input the choice: " << endl;
-	//cin  >> nChoice;
-	nChoice = 1;
 
 	glutInit(&argc, (char**)argv); //initialize the tool kit
 	glutInitDisplayMode(GLUT_DOUBLE |GLUT_RGB | GLUT_DEPTH);//set the display mode
 	glutInitWindowSize(screenWidth, screenHeight); //set window size
 	glutInitWindowPosition(100, 100); // set window position on screen
-	glutCreateWindow("Lab 2"); // open the screen window
-	cylinder.CreateShape1(1, 2, 12, 4, 1, 0);
+	glutCreateWindow("Ha Huy Long Hai - 1812064"); // open the screen window
 
+	shape1.CreateShape1(0.6, 0.8, 12, 4, 0.5, 0);
+
+    glutSpecialFunc(specialKeys);
+    glutKeyboardFunc(keyInput);
+    glutReshapeFunc(reshape);
 	myInit();
     glutDisplayFunc(myDisplay);
 	  
