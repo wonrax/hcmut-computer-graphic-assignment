@@ -160,19 +160,22 @@ public:
         }
     }
 
-    void CreateCube(float fSize) {
+    void CreateBase(float a, float b, float h) {
 	int i;
 
+    a = a / 2;
+    b = b / 2;
+    h = h / 2;
 	numVerts=8;
 	pt = new Point3[numVerts];
-	pt[0].set(-fSize, fSize, fSize);
-	pt[1].set( fSize, fSize, fSize);
-	pt[2].set( fSize, fSize, -fSize);
-	pt[3].set(-fSize, fSize, -fSize);
-	pt[4].set(-fSize, -fSize, fSize);
-	pt[5].set( fSize, -fSize, fSize);
-	pt[6].set( fSize, -fSize, -fSize);
-	pt[7].set(-fSize, -fSize, -fSize);
+	pt[0].set(-a, h, -b);
+	pt[1].set(a, h, -b);
+	pt[2].set(a, h, b);
+	pt[3].set(-a, h, b);
+	pt[4].set(-a, -h, -b);
+	pt[5].set(a, -h, -b);
+	pt[6].set(a, -h, b);
+	pt[7].set(-a, -h, b);
 
 
 	numFaces= 6;
@@ -346,6 +349,7 @@ int		screenWidth = 1200;
 int		screenHeight = 600;
 
 Mesh shape1;
+Mesh base;
 
 float camPosX = 1;
 float camPosY = 3;
@@ -541,6 +545,7 @@ int main(int argc, char* argv[])
 	glutCreateWindow("Ha Huy Long Hai - 1812064"); // open the screen window
 
 	shape1.CreateShape1(0.6, 0.8, 12, 4, 0.5, 0);
+    // shape1.CreateBase(2,3,0.5);
 
     glutSpecialFunc(specialKeys);
     glutKeyboardFunc(keyInput);
