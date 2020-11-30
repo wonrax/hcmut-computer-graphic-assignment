@@ -8,14 +8,11 @@ using namespace std;
 
 #define PI			3.1415926
 #define DTR			0.0174533
-#define	COLORNUM		14
+#define	COLORNUM		5
 
 
 float	ColorArr[COLORNUM][3] = {{0, 1, 0.0}, {0.0, 0, 1}, { 1,  1, 0.0}, 
-								{0.1, 0.1,  0.1}, { 1.0, 0.0, 1.0},{ 0.0, 1.0, 1.0}, 
-								 {0.3, 0.3, 0.3}, {0.5, 0.5, 0.5}, { 0.9,  0.9, 0.9},
-								{1.0, 0.5,  0.5}, { 0.5, 1.0, 0.5},{ 0.5, 0.5, 1.0},
-									{0.0, 0.0, 0.0}, {0.69, 0.69, 0.69}};
+								{0.1, 0.1,  0.1}, {0.1, 0.8, 0.1}};
 
 class Point3 {
     public:
@@ -253,7 +250,7 @@ public:
 }
     void CreateBlade(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase);
     void CreateShape5(float fwidth, float fHeight, float fDepth, int nSegment);
-    void CreateBase1(float fwidth, float fLargeHeight, float fSmallHeight, float fDepth, float fRadius, int nSegment);
+    void CreateBase1(float fLargeWidth, float fSmallWidth, float fLargeHeight, float fSmallHeight, float fDepth, float fRadius, int nSegment);
 };
 
 void Mesh::CreateBlade(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase) {
@@ -355,7 +352,7 @@ void Mesh::CreateBlade(float smallBase, float largeBase, int nSegment, float fHe
     }
 }
 
-void Mesh::CreateShape5(float fwidth, float fHeight, float fDepth, int nSegment) {
+void Mesh::CreateShape5(float fwidth,  float fHeight, float fDepth, int nSegment) {
     numVerts = 8 + 4 *  (nSegment - 1);
     numFaces = 2 * nSegment + 4;
 
@@ -487,7 +484,182 @@ void Mesh::CreateShape5(float fwidth, float fHeight, float fDepth, int nSegment)
     
 }
 
-void Mesh::CreateBase1(float fwidth, float fLargeHeight, float fSmallHeight, float fDepth, float fRadius, int nSegment) {
+void Mesh::CreateBase1(float fLargeWidth, float fSmallWidth, float fLargeHeight, float fSmallHeight, float fDepth, float fRadius, int nSegment) {
+    numVerts = 14 + 2 * (nSegment - 1);
+    numFaces = 13 + nSegment * 3;
+
+    pt = new Point3[numVerts];
+    face = new Face[numFaces];
+
+    float leftBoundX = - fLargeWidth / 2;
+    float rightBoundX = fLargeWidth / 2;
+    float topBoundY = fLargeHeight / 2;
+    float botBoundY = - fLargeHeight / 2;
+    float topBoundZ = fDepth / 2;
+    float botBoundZ = - fDepth / 2;
+    float seperateX = fSmallWidth - fLargeWidth / 2;
+    float seperateY = fSmallHeight - fLargeHeight / 2;
+    float circleLeftX = (fLargeWidth / 2 - seperateX) / 2 - fRadius + seperateX;
+    float circleRightX = circleLeftX + 2 * fRadius;
+    float circleCenterX = circleLeftX + fRadius;
+    
+    pt[0].set(leftBoundX, botBoundY, topBoundZ);
+    pt[1].set(leftBoundX, seperateY, topBoundZ);
+    pt[2].set(seperateX, seperateY, topBoundZ);
+    pt[3].set(circleLeftX, topBoundY, topBoundZ);
+    pt[4].set(circleCenterX, topBoundY, topBoundZ);
+    pt[5].set(circleRightX, topBoundY, topBoundZ);
+    pt[6].set(rightBoundX, botBoundY, topBoundZ);
+
+    pt[7].set(leftBoundX, botBoundY, botBoundZ);
+    pt[8].set(leftBoundX, seperateY, botBoundZ);
+    pt[9].set(seperateX, seperateY, botBoundZ);
+    pt[10].set(circleLeftX, topBoundY, botBoundZ);
+    pt[11].set(circleCenterX, topBoundY, botBoundZ);
+    pt[12].set(circleRightX, topBoundY, botBoundZ);
+    pt[13].set(rightBoundX, botBoundY, botBoundZ);
+
+    face[0].nVerts = 4;
+    face[0].vert = new VertexID[face[0].nVerts];
+    face[0].vert[0].vertIndex = 0;
+    face[0].vert[1].vertIndex = 1;
+    face[0].vert[2].vertIndex = 8;
+    face[0].vert[3].vertIndex = 7;
+
+    face[1].nVerts = 4;
+    face[1].vert = new VertexID[face[1].nVerts];
+    face[1].vert[0].vertIndex = 0;
+    face[1].vert[1].vertIndex = 6;
+    face[1].vert[2].vertIndex = 2;
+    face[1].vert[3].vertIndex = 1;
+
+    face[2].nVerts = 4;
+    face[2].vert = new VertexID[face[2].nVerts];
+    face[2].vert[0].vertIndex = 1;
+    face[2].vert[1].vertIndex = 2;
+    face[2].vert[2].vertIndex = 9;
+    face[2].vert[3].vertIndex = 8;
+
+    face[3].nVerts = 4;
+    face[3].vert = new VertexID[face[3].nVerts];
+    face[3].vert[0].vertIndex = 7;
+    face[3].vert[1].vertIndex = 8;
+    face[3].vert[2].vertIndex = 9;
+    face[3].vert[3].vertIndex = 13;
+
+    face[4].nVerts = 4;
+    face[4].vert = new VertexID[face[4].nVerts];
+    face[4].vert[0].vertIndex = 0;
+    face[4].vert[1].vertIndex = 7;
+    face[4].vert[2].vertIndex = 13;
+    face[4].vert[3].vertIndex = 6;
+
+    face[5].nVerts = 3;
+    face[5].vert = new VertexID[face[5].nVerts];
+    face[5].vert[0].vertIndex = 2;
+    face[5].vert[1].vertIndex = 4;
+    face[5].vert[2].vertIndex = 3;
+
+    face[6].nVerts = 3;
+    face[6].vert = new VertexID[face[6].nVerts];
+    face[6].vert[0].vertIndex = 2;
+    face[6].vert[1].vertIndex = 6;
+    face[6].vert[2].vertIndex = 4;
+
+    face[7].nVerts = 3;
+    face[7].vert = new VertexID[face[7].nVerts];
+    face[7].vert[0].vertIndex = 6;
+    face[7].vert[1].vertIndex = 5;
+    face[7].vert[2].vertIndex = 4;
+
+    face[8].nVerts = 3;
+    face[8].vert = new VertexID[face[8].nVerts];
+    face[8].vert[0].vertIndex = 9;
+    face[8].vert[1].vertIndex = 10;
+    face[8].vert[2].vertIndex = 11;
+
+    face[9].nVerts = 3;
+    face[9].vert = new VertexID[face[9].nVerts];
+    face[9].vert[0].vertIndex = 9;
+    face[9].vert[1].vertIndex = 11;
+    face[9].vert[2].vertIndex = 13;
+    
+    face[10].nVerts = 3;
+    face[10].vert = new VertexID[face[10].nVerts];
+    face[10].vert[0].vertIndex = 13;
+    face[10].vert[1].vertIndex = 11;
+    face[10].vert[2].vertIndex = 12;
+
+    face[11].nVerts = 4;
+    face[11].vert = new VertexID[face[11].nVerts];
+    face[11].vert[0].vertIndex = 2;
+    face[11].vert[1].vertIndex = 3;
+    face[11].vert[2].vertIndex = 10;
+    face[11].vert[3].vertIndex = 9;
+
+    face[12].nVerts = 4;
+    face[12].vert = new VertexID[face[12].nVerts];
+    face[12].vert[0].vertIndex = 6;
+    face[12].vert[1].vertIndex = 13;
+    face[12].vert[2].vertIndex = 12;
+    face[12].vert[3].vertIndex = 5;
+
+
+    float angle = 0;
+    for (int i = 0; i < nSegment; i++)
+    {
+        if (i < nSegment - 1) {
+            angle += 180 / nSegment * DTR;
+            pt[i + 14].set(fRadius * cos(angle) + circleCenterX, fRadius * sin(angle) + topBoundY, topBoundZ);
+            pt[i + 14 + nSegment - 1].set(fRadius * cos(angle) + circleCenterX, fRadius * sin(angle) + topBoundY, botBoundZ);
+        }
+
+        int secondPoint = i + 13;
+        int lastPoint = i + 13 + 1;
+        face[i + 13].nVerts = 3;
+        face[i + 13].vert = new VertexID[face[i + 13].nVerts];
+        if (i == 0) secondPoint = 5;
+        else if (i == nSegment - 1) lastPoint = 3;
+        face[i + 13].vert[0].vertIndex = 4;
+        face[i + 13].vert[1].vertIndex = secondPoint;
+        face[i + 13].vert[2].vertIndex = lastPoint;
+
+        secondPoint = i + 13 + nSegment - 1 + 1;
+        lastPoint = i + 13 + nSegment - 1;
+        face[i + 13 + nSegment].nVerts = 3;
+        face[i + 13 + nSegment].vert = new VertexID[face[i + 13 + nSegment].nVerts];
+        if (i == 0) lastPoint = 12;
+        else if (i == nSegment - 1) secondPoint = 10;
+        face[i + 13 + nSegment].vert[0].vertIndex = 11;
+        face[i + 13 + nSegment].vert[1].vertIndex = secondPoint;
+        face[i + 13 + nSegment].vert[2].vertIndex = lastPoint;
+
+        int firstPoint;
+        int thirdPoint;
+        if (i == 0) {
+            firstPoint = 5;
+            secondPoint = 12;
+        }
+        else {
+            firstPoint = i + 13;
+            secondPoint = i + 13 + nSegment - 1;
+        }
+        if (i == nSegment - 1) {
+            thirdPoint = 10;
+            lastPoint = 3;
+        }
+        else {
+            thirdPoint = i + 13 + nSegment - 1 + 1;
+            lastPoint = i + 13 + 1;
+        }
+        face[i + 13 + 2 * nSegment].nVerts = 4;
+        face[i + 13 + 2 * nSegment].vert = new VertexID[face[i + 13 + 2 * nSegment].nVerts];
+        face[i + 13 + 2 * nSegment].vert[0].vertIndex = firstPoint;
+        face[i + 13 + 2 * nSegment].vert[1].vertIndex = secondPoint;
+        face[i + 13 + 2 * nSegment].vert[2].vertIndex = thirdPoint;
+        face[i + 13 + 2 * nSegment].vert[3].vertIndex = lastPoint;
+
+    }
     
 }
 
@@ -496,6 +668,7 @@ int		screenHeight = 600;
 
 Mesh blade;
 Mesh shape5;
+Mesh base1;
 Mesh joint;
 Mesh base;
 
@@ -548,7 +721,21 @@ void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
     if (!isWireframeMode) {
-        base.DrawColor(0);
+        base.DrawColor(4);
+
+        glTranslated(0, 0.19, 0);
+
+        glPushMatrix();        
+        glTranslated(-1, 0.35, 0.2);
+        base1.DrawColor(0);
+        glPopMatrix();
+
+        glPushMatrix(); 
+        glTranslated(-0.16, 0.75, 0.1);
+        glRotated(90, 1, 0, 0);
+        joint.DrawColor(3);
+        glPopMatrix();
+
         glTranslated(0, 0.8, 0);
         blade.DrawColor(1);
 
@@ -564,7 +751,21 @@ void myDisplay() {
     }
     else {
         drawAxis();
+
         base.DrawWireframe();
+
+        glTranslated(0, 0.19, 0);
+        glPushMatrix();
+        glTranslated(-1, 0.35, 0);
+        base1.DrawWireframe();
+        glPopMatrix();
+
+        glPushMatrix(); 
+        glTranslated(-0.16, 0.75, 0.1);
+        glRotated(90, 1, 0, 0);
+        joint.DrawWireframe();
+        glPopMatrix();
+
         glTranslated(0, 0.8, 0);
         blade.DrawWireframe();
 
@@ -721,6 +922,7 @@ int main(int argc, char* argv[])
     base.CreateBase(5,2,0.25);
 	shape5.CreateShape5(0.7, 0.45, 0.2, 16);
     joint.CreateCylinder(16, 0.5, 0.1);
+    base1.CreateBase1(2.5, 1.7, 0.8, 0.4, 0.2, 0.2, 16);
 
     glutSpecialFunc(specialKeys);
     glutKeyboardFunc(keyInput);
