@@ -11,8 +11,8 @@ using namespace std;
 #define	COLORNUM		14
 
 
-float	ColorArr[COLORNUM][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, { 0.0,  0.0, 1.0}, 
-								{1.0, 1.0,  0.0}, { 1.0, 0.0, 1.0},{ 0.0, 1.0, 1.0}, 
+float	ColorArr[COLORNUM][3] = {{0, 1, 0.0}, {0.0, 0, 1}, { 1,  1, 0.0}, 
+								{0.1, 0.1,  0.1}, { 1.0, 0.0, 1.0},{ 0.0, 1.0, 1.0}, 
 								 {0.3, 0.3, 0.3}, {0.5, 0.5, 0.5}, { 0.9,  0.9, 0.9},
 								{1.0, 0.5,  0.5}, { 0.5, 1.0, 0.5},{ 0.5, 0.5, 1.0},
 									{0.0, 0.0, 0.0}, {0.69, 0.69, 0.69}};
@@ -72,6 +72,7 @@ public:
 	}
     
 	void DrawWireframe() {
+        glColor3f(0, 0, 0);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for (int f = 0; f < numFaces; f++)
         {
@@ -86,7 +87,7 @@ public:
         }
     }
 	void DrawColor(int colorNumIndex) {
-        glPolygonMode(GL_FRONT, GL_FILL);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         for (int f = 0; f < numFaces; f++)
         {
             glBegin(GL_POLYGON);
@@ -95,8 +96,8 @@ public:
                 int		iv = face[f].vert[v].vertIndex;
                 int		ic = face[f].vert[v].colorIndex;
                 
-                ic = f % COLORNUM;
-                // ic = colorNumIndex;
+                // ic = f % COLORNUM;
+                ic = colorNumIndex;
 
                 glColor3f(ColorArr[ic][0], ColorArr[ic][1], ColorArr[ic][2]); 
                 glVertex3f(pt[iv].x, pt[iv].y, pt[iv].z);
@@ -104,7 +105,16 @@ public:
             glEnd();
         }
     }
-
+    void DrawPoints() {
+        glPointSize(2);  // wat
+        glColor3f(0,0,0);
+        glBegin(GL_POINTS);
+        for (int i = 0; i < numVerts; i++)
+        {
+            glVertex3f(pt[i].x, pt[i].y, pt[i].z);
+        }
+        glEnd();  
+    }
 	void CreateCylinder(int nSegment, float fHeight, float fRadius) {
         numVerts = (nSegment + 1) * 2;
         numFaces = nSegment * 3;
@@ -138,9 +148,9 @@ public:
             face[i + nSegment].nVerts = 3;
             face[i + nSegment].vert = new VertexID[face[i + nSegment].nVerts];
             face[i + nSegment].vert[0].vertIndex = 1; //bottom centric point
-            face[i + nSegment].vert[1].vertIndex = i + firstBotPoint;
-            if (i == nSegment - 1) face[i + nSegment].vert[2].vertIndex = firstBotPoint;
-            else face[i + nSegment].vert[2].vertIndex = i + firstBotPoint;
+            face[i + nSegment].vert[2].vertIndex = i + firstBotPoint;
+            if (i == nSegment - 1) face[i + nSegment].vert[1].vertIndex = firstBotPoint;
+            else face[i + nSegment].vert[1].vertIndex = i + firstBotPoint + 1;
 
             //One segment side face
             face[i + 2 * nSegment].nVerts = 4;
@@ -159,7 +169,6 @@ public:
             alpha += (float)360 / nSegment;
         }
     }
-
     void CreateBase(float a, float b, float h) {
 	int i;
 
@@ -242,10 +251,12 @@ public:
 		face[5].vert[i].colorIndex = 5;
 
 }
-    void CreateShape1(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase);
+    void CreateBlade(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase);
+    void CreateShape5(float fwidth, float fHeight, float fDepth, int nSegment);
+    void CreateBase1(float fwidth, float fLargeHeight, float fSmallHeight, float fDepth, float fRadius, int nSegment);
 };
 
-void Mesh::CreateShape1(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase) {
+void Mesh::CreateBlade(float smallBase, float largeBase, int nSegment, float fHeight, float fDepth, float pivotFromLBase) {
     numVerts = (4 + nSegment) * 2;
     numFaces = (1 + nSegment) * 2 + 5 + nSegment;
 
@@ -344,11 +355,148 @@ void Mesh::CreateShape1(float smallBase, float largeBase, int nSegment, float fH
     }
 }
 
+void Mesh::CreateShape5(float fwidth, float fHeight, float fDepth, int nSegment) {
+    numVerts = 8 + 4 *  (nSegment - 1);
+    numFaces = 2 * nSegment + 4;
+
+    pt = new Point3[numVerts];
+    face = new Face[numFaces];
+
+    float topZBound = fDepth / 2;
+    float botZBound = - fDepth / 2;
+    float topYBound = fHeight / 2;
+    float botYBound = - fHeight / 2;
+    float rightXrectangleBound = fwidth / 2;
+    float leftXrectangleBound = - fwidth / 2;
+    float fanRadius = topYBound;
+
+    pt[0].set(leftXrectangleBound, topYBound, topZBound);
+    pt[1].set(rightXrectangleBound, topYBound, topZBound);
+    pt[2].set(rightXrectangleBound, botYBound, topZBound);
+    pt[3].set(leftXrectangleBound, botYBound, topZBound);
+
+    pt[4].set(leftXrectangleBound, topYBound, botZBound);
+    pt[5].set(rightXrectangleBound, topYBound, botZBound);
+    pt[6].set(rightXrectangleBound, botYBound, botZBound);
+    pt[7].set(leftXrectangleBound, botYBound, botZBound);
+
+    int rightTopFanStart = 8;
+    int rightBotFanStart = rightTopFanStart + nSegment - 1;
+    int leftTopFanStart = rightBotFanStart + nSegment - 1;
+    int leftBotFanStart = leftTopFanStart + nSegment - 1;
+
+    //top rectangle Face
+    face[0].nVerts = 4 + 2 * (nSegment - 1);
+    face[0].vert = new VertexID[face[0].nVerts];
+    face[0].vert[0].vertIndex = 1; 
+    face[0].vert[1].vertIndex = 0;
+    for (int i = 0; i < nSegment - 1; i++)
+    {
+        face[0].vert[i + 2].vertIndex = leftTopFanStart + nSegment - 2 - i;
+        face[0].vert[i + 2 + nSegment - 1 + 2].vertIndex = rightTopFanStart + nSegment - 2 - i;
+    }
+    face[0].vert[2 + nSegment - 1].vertIndex = 3;
+    face[0].vert[2 + nSegment - 1 + 1].vertIndex = 2;
+
+    //bot rectangle Face
+    face[2].nVerts = 4 + 2 * (nSegment - 1);
+    face[2].vert = new VertexID[face[2].nVerts];
+    face[2].vert[0].vertIndex = 4; 
+    face[2].vert[1].vertIndex = 5;
+    for (int i = 0; i < nSegment - 1; i++)
+    {
+        face[2].vert[i + 2].vertIndex = i + rightBotFanStart;
+        face[2].vert[i + 2 + nSegment - 1 + 2].vertIndex = i + leftBotFanStart;
+    }
+    face[2].vert[2 + nSegment - 1].vertIndex = 6;
+    face[2].vert[2 + nSegment - 1 + 1].vertIndex = 7;
+
+    //side faces
+    face[1].nVerts = 4;
+    face[1].vert = new VertexID[face[1].nVerts];
+    face[1].vert[0].vertIndex = 0;
+    face[1].vert[1].vertIndex = 1;
+    face[1].vert[2].vertIndex = 5;
+    face[1].vert[3].vertIndex = 4;
+
+    face[3].nVerts = 4;
+    face[3].vert = new VertexID[face[3].nVerts];
+    face[3].vert[0].vertIndex = 2;
+    face[3].vert[1].vertIndex = 3;
+    face[3].vert[2].vertIndex = 7;
+    face[3].vert[3].vertIndex = 6;
+
+    float rightAngle = 90 * DTR;
+    float leftAngle = - 90 * DTR;
+
+    int rightStartFace = 4;
+    int leftStartFace = rightStartFace + nSegment;  
+    for (int i = 0; i < nSegment; i++)
+    {
+        rightAngle -= (float)180 / nSegment * DTR;
+        leftAngle -= (float)180 / nSegment * DTR;
+
+        if (i < nSegment - 1)
+        {
+            pt[i + rightTopFanStart].set(rightXrectangleBound + fanRadius * cos(rightAngle), fanRadius * sin(rightAngle), topZBound);
+            pt[i + rightBotFanStart].set(rightXrectangleBound + fanRadius * cos(rightAngle), fanRadius * sin(rightAngle), botZBound);
+
+            pt[i + leftTopFanStart].set(leftXrectangleBound + fanRadius * cos(leftAngle), fanRadius * sin(leftAngle), topZBound);
+            pt[i + leftBotFanStart].set(leftXrectangleBound + fanRadius * cos(leftAngle), fanRadius * sin(leftAngle), botZBound);
+        }
+
+        face[i + rightStartFace].nVerts = 4;
+        face[i + rightStartFace].vert = new VertexID[face[i + rightStartFace].nVerts];
+        int firstFaceVert = i + rightTopFanStart - 1;
+        int secondFaceVert = i + rightTopFanStart;
+        int thirdFaceVert = i + rightBotFanStart;
+        int lastFaceVert = i + rightBotFanStart - 1;
+        if (i == 0) {
+            firstFaceVert = 1;
+            lastFaceVert = 5;
+        }
+        else if (i == nSegment - 1) {
+            secondFaceVert = 2;
+            thirdFaceVert = 6;
+        }
+        face[i + rightStartFace].vert[0].vertIndex = firstFaceVert;
+        face[i + rightStartFace].vert[1].vertIndex = secondFaceVert;
+        face[i + rightStartFace].vert[2].vertIndex = thirdFaceVert;
+        face[i + rightStartFace].vert[3].vertIndex = lastFaceVert;
+
+
+        face[i + leftStartFace].nVerts = 4;
+        face[i + leftStartFace].vert = new VertexID[face[i + leftStartFace].nVerts];
+        firstFaceVert = i + leftTopFanStart - 1;
+        secondFaceVert = i + leftTopFanStart;
+        thirdFaceVert = i + leftBotFanStart;
+        lastFaceVert = i + leftBotFanStart - 1;
+        if (i == 0) {
+            firstFaceVert = 3;
+            lastFaceVert = 7;
+        }
+        else if (i == nSegment - 1) {
+            secondFaceVert = 0;
+            thirdFaceVert = 4;
+        }
+        face[i + leftStartFace].vert[0].vertIndex = firstFaceVert;
+        face[i + leftStartFace].vert[1].vertIndex = secondFaceVert;
+        face[i + leftStartFace].vert[2].vertIndex = thirdFaceVert;
+        face[i + leftStartFace].vert[3].vertIndex = lastFaceVert;
+    }
+    
+}
+
+void Mesh::CreateBase1(float fwidth, float fLargeHeight, float fSmallHeight, float fDepth, float fRadius, int nSegment) {
+    
+}
 
 int		screenWidth = 1200;
 int		screenHeight = 600;
 
-Mesh shape1;
+Mesh blade;
+Mesh shape5;
+Mesh joint;
 Mesh base;
 
 float camPosX = 1;
@@ -364,7 +512,7 @@ void reshape(GLsizei width, GLsizei height) {
     float aspect = (float)width / height;
     glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
     glLoadIdentity();
-    gluPerspective(60, aspect, 0.001, 300);
+    gluPerspective(45, aspect, 0.001, 300);
     // glutPostRedisplay();
 }
 
@@ -387,29 +535,48 @@ void drawAxis()
 }
 
 void myDisplay() {
+    
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
     if (!isOrtho) {
 	    gluLookAt(camPosX, camPosY, camPosZ, 0, 0, 0, 0, 1, 0);
     }
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-	// glViewport(0, 0, screenWidth/2, screenHeight);
-	
-	// drawAxis();
-
-	// glColor3f(0, 0, 0);
-	// cylinder.DrawWireframe();
-
 	glViewport(0, 0, screenWidth, screenHeight);
 
-	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
     if (!isWireframeMode) {
-        shape1.DrawColor(1);
+        base.DrawColor(0);
+        glTranslated(0, 0.8, 0);
+        blade.DrawColor(1);
+
+        glPushMatrix();
+        glTranslated(1.5, 0, 0.1);
+        glRotated(90, 1, 0, 0);
+        joint.DrawColor(3);
+
+        glPopMatrix();
+        glTranslated(1.5 + 0.17, 0 + 0.3, 0.2);
+        glRotated(60, 0, 0, 1);
+        shape5.DrawColor(2);
     }
     else {
         drawAxis();
-        shape1.DrawWireframe();
+        base.DrawWireframe();
+        glTranslated(0, 0.8, 0);
+        blade.DrawWireframe();
+
+        glPushMatrix();
+        glTranslated(1.5, 0, 0.1);
+        glRotated(90, 1, 0, 0);
+        joint.DrawWireframe();
+
+        glPopMatrix();
+        glTranslated(1.5 + 0.17, 0 + 0.3, 0.2);
+        glRotated(60, 0, 0, 1);
+        shape5.DrawWireframe();
     }
 
 	glFlush();
@@ -446,7 +613,13 @@ void moveCamera(int direction) {
     else {
         float moveDistance = 0.1;
         if (direction == 3) moveDistance = - moveDistance;
-        float dirAngle = atan(camPosZ/camPosX);
+        // float dirAngle = atan(camPosZ/camPosX);
+        float camRadius = sqrt(camPosX * camPosX + camPosZ * camPosZ);
+        float camPosXid = camPosX / camRadius;
+        float dirAngle = acos(camPosXid);
+        if (camPosZ < 0) {
+            dirAngle += 2 * (PI - dirAngle);
+        }
         camPosX += moveDistance * cos(dirAngle);
         camPosZ += moveDistance * sin(dirAngle);
     }
@@ -488,7 +661,7 @@ void toggleOrtho() {
         gluLookAt(0, 0, 3, 0, 0, 0, 0, 1, 0);
     }
     else {
-        gluPerspective(60, (float)screenWidth/screenHeight, 0.001, 300);
+        gluPerspective(45, (float)screenWidth/screenHeight, 0.001, 300);
         glMatrixMode(GL_MODELVIEW);
 	    glLoadIdentity();
         gluLookAt(camPosX, camPosY, camPosZ, 0, 0, 0, 0, 1, 0);
@@ -532,20 +705,22 @@ void myInit()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	// glOrtho(-fHalfSize, fHalfSize, -fHalfSize, fHalfSize, -1000, 1000);
-    gluPerspective(60, (float)screenWidth/screenHeight, 0.001, 300);
+    gluPerspective(45, (float)screenWidth/screenHeight, 0.001, 300);
 }
 
 int main(int argc, char* argv[])
 {
 
-	glutInit(&argc, (char**)argv); //initialize the tool kit
-	glutInitDisplayMode(GLUT_DOUBLE |GLUT_RGB | GLUT_DEPTH);//set the display mode
-	glutInitWindowSize(screenWidth, screenHeight); //set window size
-	glutInitWindowPosition(100, 100); // set window position on screen
-	glutCreateWindow("Ha Huy Long Hai - 1812064"); // open the screen window
+	glutInit(&argc, (char**)argv);
+	glutInitDisplayMode(GLUT_DOUBLE |GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(screenWidth, screenHeight);
+	glutInitWindowPosition(100, 100);
+	glutCreateWindow("Ha Huy Long Hai - 1812064");
 
-	shape1.CreateShape1(0.6, 0.8, 12, 4, 0.5, 0);
-    // shape1.CreateBase(2,3,0.5);
+	blade.CreateBlade(0.3, 0.45, 12, 3, 0.2, 0);
+    base.CreateBase(5,2,0.25);
+	shape5.CreateShape5(0.7, 0.45, 0.2, 16);
+    joint.CreateCylinder(16, 0.5, 0.1);
 
     glutSpecialFunc(specialKeys);
     glutKeyboardFunc(keyInput);
