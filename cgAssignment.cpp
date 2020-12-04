@@ -723,7 +723,7 @@ void myDisplay() {
     if (!isWireframeMode) {
         base.DrawColor(4);
 
-        glTranslated(0, 0.19, 0);
+        glTranslated(0, 0.175, 0);
 
         glPushMatrix();        
         glTranslated(-1, 0.35, 0.2);
